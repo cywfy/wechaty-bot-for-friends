@@ -1,6 +1,7 @@
 import { http } from '../util';
 import { weatherOptions, AirQuality, Weather, weather_index_detail } from './interface';
 import { Message } from 'wechaty';
+const bot_info = require('../../bot_info.json')
 
 // 腾讯天气接口
 const TX_WEATHER_API = 'https://wis.qq.com/weather/common?source=pc';
@@ -80,38 +81,56 @@ const getWeather = (options:weatherOptions):Promise<AirQuality & Weather> => {
         http.get(getParams(TX_WEATHER_API, options)).then(res => {
             const {status, data} = res.data;
             if (status === 200) {
+                if (!Object.values(data).length) {
+                    throw '';
+                }
                 resolve(data);
+                console.log('获取天气成功');
             }
-        }).catch(err => reject(''));
+        }).catch(err => {
+            console.log('获取天气失败');
+            reject('');
+        });
     });
 };
 
-const getCity = (city:string):Promise<string> => {
+const getCity = (city:string):Promise<Array<string>> => {
     return new Promise((resolve, reject) => {
         http.get(`${TX_WEATHER_SEARCH}${city}`).then(res => {
             const {data, status} = res.data;
             if (status === 200) {
-                const r:string = Object.values(data)[0] as string;
-                resolve(r);
+                if (!Object.values(data).length) {
+                    resolve(['']);
+                    console.log('没有该城市名');
+                }
+                console.log('获取城市名成功');
+                resolve(Object.values(data));
             }
-        }).catch(err => reject(''));
+        }).catch(err => {
+            console.log('搜索城市名失败');
+            reject('')
+        });
     });
 };
 
 export const weatherServer = async (msg: Message) => {
     let text = msg.text().trim();
-    text = text.replace(/天气\s*/, '');
+    const r = new RegExp(`@${bot_info.name}\\s*`);
+    text = text.replace(r, '').replace(/天气\s*/, '');
     try {
         if (!text) {
-            await msg.say("请输入需要查看天气的城市名");
+            throw "请输入需要查看天气的城市名";
+        }
+        const city: Array<string> = await getCity(encodeURI(text));
+        if (!city.length) {
+            throw '未匹配相关城市名,请重新输入'
+        }
+        if (city.length > 1) {
+            const word = city.reduce((t, v, c, arr) => (c === arr.length -1 ? t += v : t += `${v}\n`, t), '请选择如下城市中的一个查询天气(天气：xxxx)：\n');
+            await msg.say(word);
             return
         }
-        const city: string = await getCity(encodeURI(text));
-        if (!city) {
-            await msg.say('未匹配相关城市名,请重新输入'); 
-            return;
-        }
-        const [a,b, c] = city.split(', ');
+        const [a,b, c] = city[0].split(', ');
         const encodeCity = {
             province: encodeURI(a),
             city: encodeURI(b),
@@ -119,16 +138,15 @@ export const weatherServer = async (msg: Message) => {
         }
         const air_quality: AirQuality = await getWeather({weather_type: 'air|rise', ...encodeCity});
         if (!air_quality) {
-            await msg.say('获取空气质量失败');   
+            throw '获取空气质量失败';
         }
         const weather_res = await getWeather({...encodeCity, weather_type: 'observe|forecast_1h|forecast_24h|index|alarm|limit|tips|rise'});
         if (!weather_res) {
-            await msg.say('获取天气失败，请稍后重试');
-            return
+            throw '获取天气失败，请稍后重试'
         }
-        await msg.say(`${parseAirQuality(city, air_quality)}${parse24hWeather(weather_res)}`);
+        await msg.say(`${parseAirQuality(city[0], air_quality)}${parse24hWeather(weather_res)}`);
         console.log('发送天气成功');
     } catch (error) {
-        console.error('获取天气发生错误: ' + error)
+        await msg.say(error);
     }
 }

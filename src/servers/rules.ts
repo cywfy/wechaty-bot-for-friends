@@ -1,10 +1,12 @@
 import { Message } from 'wechaty';
 import { MessageType } from 'wechaty-puppet';
-import { weatherServer } from '.';
+import { weatherServer, taskServer, adminServer } from '.';
 
 const regex: {[propName: string]: any} = {
     '功能': (msg: Message) => getFeatures(msg),
-    '天气': (msg: Message) => weatherServer(msg)
+    '天气': (msg: Message) => weatherServer(msg),
+    '任务|定时': (msg: Message) => taskServer(msg),
+    '控制': (msg: Message) => adminServer(msg)
 }
 
 const getFeatures = async (msg: Message) => {
@@ -26,7 +28,7 @@ export const checkText = async (msg: Message) => {
     }
     const keys = Object.keys(regex);
     keys.forEach((v, k) => {
-        const reg = new RegExp(v);
+        const reg = new RegExp(`[@yc\\s*[\u4e00-\u9fa5]*]?${v}`);
         if (reg.test(text)) {
             regex[v](msg);
         }

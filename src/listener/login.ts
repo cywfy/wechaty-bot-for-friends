@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { setBaseDir } from '../util';
+import { Contact, Wechaty } from 'wechaty';
+import { setSth } from '../util';
 
 function mkdirsSync(dirname: string) {
     if (fs.existsSync(dirname)) {
@@ -19,14 +20,15 @@ function mkdirsSync(dirname: string) {
  * @description 您的机器人上线啦
  * @param {} user 
  */
-async function onLogin(user: any) {
+export async function onLogin(user: Contact, bot: Wechaty) {
     console.log(`贴心小助理${user}登录了`);
 
-    // Service.instance().setBot(bot);
+    const res = setSth({
+        name: bot.userSelf().name(),
+        id: bot.userSelf().id
+    });
+    if (!res) console.log('[login.ts/30: ]: ', );
 
     const tempDir = path.join(process.cwd(), './temp/image');
-    mkdirsSync(tempDir);
-    setBaseDir(tempDir);
-    
+    mkdirsSync(tempDir);    
 }
-export default onLogin;
