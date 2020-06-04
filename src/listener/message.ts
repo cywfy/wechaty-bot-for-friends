@@ -9,5 +9,7 @@ export async function onMessage(msg: Message) {
         return;
     }
     console.log(`${msg.room()}: ${msg.from()} ${msg.from()?.id}--${msg.to()}---${msg.text()}`);
-    checkText(msg);
+    if (botInfo.adminId === msg.from()!.id || regex.test(msg.text().trim())) {
+        checkText(msg);
+    }
 }

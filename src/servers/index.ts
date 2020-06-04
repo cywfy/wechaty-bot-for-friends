@@ -3,3 +3,4 @@ export * from './screenshot';
 export * from './task';
 export * from './schedule';
 export * from './admin';
+export * from './puppeteer';

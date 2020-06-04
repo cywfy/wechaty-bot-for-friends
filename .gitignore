@@ -1,3 +1,6 @@
 node_modules
 dist
 bot.memory-card.json
+bot_info.json
+package-lock.json
+temp/*

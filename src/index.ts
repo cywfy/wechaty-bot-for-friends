@@ -23,10 +23,12 @@ bot
       });
     }
   })
-  .on('login', (user: Contact) => onLogin(user, bot))
+  .on('login', (user: Contact) => (console.log('正在拼命登陆中...'), onLogin(user, bot)))
   .on('message', onMessage)
   .on('friendship', onFriendShip)
   .on('logout', (user: Contact, reason: string) => {
     console.log(`logout user: ${user}, reason : ${reason}`);
   })
   .start();
+
+  export default bot;

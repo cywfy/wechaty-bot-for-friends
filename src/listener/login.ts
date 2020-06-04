@@ -21,7 +21,7 @@ function mkdirsSync(dirname: string) {
  * @param {} user 
  */
 export async function onLogin(user: Contact, bot: Wechaty) {
-    console.log(`贴心小助理${user}登录了`);
+    console.log(`bot: ${user} 登录成功`);
 
     const res = setSth({
         name: bot.userSelf().name(),

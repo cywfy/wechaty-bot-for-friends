@@ -7,12 +7,12 @@ const entryMD5 = async (str: string):Promise<string> => {
 };
 
 async function checkPath(fileName: string, fileExt:string = 'png') {
-    const filePath = path.join(__dirname, '../../static/image', `${(fileName)}.${fileExt}`);
+    const filePath = path.join(__dirname, '../../temp/image', `${(fileName)}.${fileExt}`);
     await fs.access(filePath, (err) => {
         if (err) {
           if (err.code === 'ENOENT') {
             console.error('文件不存在');
-            fs.mkdirSync('../../static/image/')
+            fs.mkdirSync('../../temp/image/')
           }     
         }
       
